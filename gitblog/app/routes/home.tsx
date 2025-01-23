@@ -1,6 +1,6 @@
 import type { Route } from "./+types/home";
 import { Welcome } from "../welcome/welcome";
-import { Hello } from "../welcome/hello";
+import { Hello } from "./hello";
 
 
 
