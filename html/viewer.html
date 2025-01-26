@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Markdown Viewer</title>
 </head>
 
@@ -12,7 +12,13 @@
     <div id="markdown-content">
         <p>Loading...</p>
     </div>
+
+    <!-- 홈으로 돌아가기 버튼 -->
     <a href="/Git-Personal-Blog-System" class="home-button">Home</a>
+
+    <!-- (중요) marked.js 라이브러리 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+    <!-- viewer.js 스크립트 -->
     <script src="../js/viewer.js"></script>
 </body>
 

@@ -11,15 +11,18 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Markdown 파일 로드
-  fetch(`../public/posts/${filename}`) // 경로 조정
+  fetch(`../public/posts/${filename}`)
     .then((response) => {
       if (!response.ok) {
         throw new Error("Failed to fetch the Markdown file.");
       }
       return response.text();
     })
-    .then((content) => {
-      contentDiv.innerHTML = `<pre>${content}</pre>`; // Markdown 내용을 표시
+    .then((markdown) => {
+      // 마크다운을 HTML로 변환해 표시
+      // marked.parse() → HTML 문자열로 변환
+      const htmlContent = marked.parse(markdown);
+      contentDiv.innerHTML = htmlContent;
     })
     .catch((error) => {
       console.error("Error loading Markdown file:", error);
