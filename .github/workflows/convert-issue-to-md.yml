@@ -22,23 +22,37 @@ jobs:
       - name: Convert issue to Markdown
         run: |
           echo "Converting issue to markdown..."
-          # 이슈에서 전달받은 제목 및 본문
+
+          # 폴더가 없으면 생성
+          if [ ! -d "public/posts" ]; then
+            echo "public/posts 폴더가 없어 생성합니다..."
+            mkdir -p "public/posts"
+          else
+            echo "public/posts 폴더가 이미 존재합니다. 생성 스킵."
+          fi
+
+          # 이슈 제목 및 본문
           ISSUE_TITLE="${{ github.event.inputs.title }}"
           ISSUE_BODY="${{ github.event.inputs.body }}"
 
           # 날짜 및 기존 파일 개수 기반으로 파일명 생성
           ISSUE_DATE=$(date +'%Y%m%d')
-          ISSUE_COUNT=$(ls public/posts | grep $ISSUE_DATE | wc -l)
+          ISSUE_COUNT=$(ls public/posts | grep "$ISSUE_DATE" | wc -l)
           FILE_NAME="public/posts/${ISSUE_DATE}_$((ISSUE_COUNT + 1)).md"
 
           # 마크다운 파일 생성
-          echo "## $ISSUE_TITLE" > $FILE_NAME
-          echo "" >> $FILE_NAME
-          echo "$ISSUE_BODY" >> $FILE_NAME
+          echo "## $ISSUE_TITLE" > "$FILE_NAME"
+          echo "" >> "$FILE_NAME"
+          echo "$ISSUE_BODY" >> "$FILE_NAME"
 
       - name: Update posts.json
         run: |
-          # 1) JSON 파일이 없는 경우 초기화 (비어있는 배열)
+          # 폴더가 없을 경우에도 다시 한 번 확인 (안전성)
+          if [ ! -d "public/posts" ]; then
+            mkdir -p "public/posts"
+          fi
+
+          # 1) JSON 파일이 없는 경우 초기화
           if [ ! -f public/posts.json ]; then
             echo "[]" > public/posts.json
           fi
@@ -49,14 +63,13 @@ jobs:
           # 3) 날짜 (YYYY-MM-DD 형식)
           ISSUE_DATE_FORMATTED="${ISSUE_DATE:0:4}-${ISSUE_DATE:4:2}-${ISSUE_DATE:6:2}"
 
-          # 4) 요약: 이슈 본문의 첫 줄
-          #    첫 줄 추출 → IFS와 read를 사용해 처리
+          # 4) 요약 (이슈 본문의 첫 줄)
           FIRST_LINE=$(echo "${{ github.event.inputs.body }}" | sed -n 1p)
 
           # 5) jq로 새 레코드 추가
           NEW_JSON=$(jq ". += [{
             \"id\": $NEW_ID,
-            \"filename\": \"$(basename $FILE_NAME)\",
+            \"filename\": \"$(basename "$FILE_NAME")\",
             \"title\": \"$ISSUE_TITLE\",
             \"summary\": \"${FIRST_LINE}\",
             \"date\": \"$ISSUE_DATE_FORMATTED\"
