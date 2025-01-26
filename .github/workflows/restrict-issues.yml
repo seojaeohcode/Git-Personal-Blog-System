@@ -12,8 +12,8 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const authorizedUser = process.env.AUTHORIZED_USER; // Secrets에서 단일 사용자 가져오기
-            const issueCreator = context.payload.issue.user.login; // 이슈 작성자 ID
+            const authorizedUser = process.env.AUTHORIZED_USER;
+            const issueCreator = context.payload.issue.user.login;
             console.log(`Authorized User: ${authorizedUser}`);
             console.log(`Issue Creator: ${issueCreator}`);
 
@@ -35,16 +35,32 @@ jobs:
 
       - name: Trigger Convert Issue Workflow
         if: ${{ success() }} # 작성자가 허가된 경우에만 실행
+        shell: bash
         run: |
           echo "Triggering Convert Issue Workflow..."
+
+          # 1) 이슈 제목/본문을 변수에 저장
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+          ISSUE_BODY="${{ github.event.issue.body }}"
+
+          # 2) 멀티라인을 안전한 JSON 문자열로 변환 (개행 이스케이프)
+          SAFE_BODY=$(echo "${ISSUE_BODY}" | jq -Rs .)
+          echo "Safe Body: $SAFE_BODY"
+
+          # 3) JSON Payload 파일 생성
+          cat <<EOF > dispatch.json
+          {
+            "ref": "main",
+            "inputs": {
+              "title": "${ISSUE_TITLE}",
+              "body": ${SAFE_BODY}
+            }
+          }
+          EOF
+
+          # 4) Convert Issue to MD 워크플로우 호출
           curl -X POST \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/${{ github.repository }}/actions/workflows/convert-issue-to-md.yml/dispatches \
-            -d '{
-              "ref": "main",
-              "inputs": {
-                "title": "${{ github.event.issue.title }}",
-                "body": "${{ github.event.issue.body }}"
-              }
-            }'
+            --data @dispatch.json \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/convert-issue-to-md.yml/dispatches

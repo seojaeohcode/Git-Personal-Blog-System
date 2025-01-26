@@ -22,7 +22,6 @@ jobs:
       - name: Convert issue to Markdown
         run: |
           echo "Converting issue to markdown..."
-          # 이슈에서 전달받은 제목 및 본문
           ISSUE_TITLE="${{ github.event.inputs.title }}"
           ISSUE_BODY="${{ github.event.inputs.body }}"
 
@@ -31,7 +30,6 @@ jobs:
           ISSUE_COUNT=$(ls public/posts | grep $ISSUE_DATE | wc -l)
           FILE_NAME="public/posts/${ISSUE_DATE}_$((ISSUE_COUNT + 1)).md"
 
-          # 마크다운 파일 생성
           echo "## $ISSUE_TITLE" > $FILE_NAME
           echo "" >> $FILE_NAME
           echo "$ISSUE_BODY" >> $FILE_NAME
