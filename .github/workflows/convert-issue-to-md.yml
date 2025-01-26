@@ -1,7 +1,16 @@
 name: Convert Issue to Markdown
 
 on:
-  workflow_dispatch: # 다른 워크플로우에서 호출 가능하도록 설정
+  workflow_dispatch:
+    inputs:
+      title:
+        description: "The title of the issue"
+        required: true
+        default: "Default Title"
+      body:
+        description: "The body of the issue"
+        required: true
+        default: "Default Body"
 
 jobs:
   debug-markdown:
