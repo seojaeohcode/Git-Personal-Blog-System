@@ -12,10 +12,8 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            // Secrets에서 허용된 사용자 목록 가져오기
-            const authorizedUsers = process.env.AUTHORIZED_USERS.split(','); 
+            const authorizedUsers = process.env.AUTHORIZED_USERS.split(','); // Secrets에서 허용된 사용자 목록 가져오기
             const issueCreator = context.payload.issue.user.login; // 이슈 작성자 ID
-
             console.log(`Authorized Users: ${authorizedUsers}`);
             console.log(`Issue Creator: ${issueCreator}`);
 
@@ -28,8 +26,19 @@ jobs:
                 state: 'closed',
                 body: 'This issue has been closed because you are not authorized.'
               });
+              return; // 작업 중단
             } else {
               console.log(`Authorized user: ${issueCreator}`);
             }
+
+      - name: Trigger Convert Issue Workflow
+        if: ${{ success() }} # 작성자가 허가된 경우에만 실행
+        run: |
+          echo "Triggering Convert Issue Workflow..."
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/convert-issue-to-md.yml/dispatches \
+            -d '{"ref":"main"}'
         env:
-          AUTHORIZED_USERS: ${{ secrets.AUTHORIZED_USERS }} # Secrets에서 값 불러오기
+          AUTHORIZED_USERS: ${{ secrets.AUTHORIZED_USERS }}

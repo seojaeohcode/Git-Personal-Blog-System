@@ -1,0 +1,14 @@
+name: Convert Issue to Markdown
+
+on:
+  workflow_dispatch: # 다른 워크플로우에서 호출 가능하도록 설정
+
+jobs:
+  debug-markdown:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Debug inputs
+        run: |
+          echo "DEBUGGING INPUTS"
+          echo "Issue Title: ${{ github.event.inputs.title }}"
+          echo "Issue Body: ${{ github.event.inputs.body }}"
