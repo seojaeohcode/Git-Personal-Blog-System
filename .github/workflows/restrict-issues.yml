@@ -12,12 +12,12 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const authorizedUsers = process.env.AUTHORIZED_USERS.split(','); // Secrets에서 허용된 사용자 목록 가져오기
+            const authorizedUser = process.env.AUTHORIZED_USER; // Secrets에서 단일 사용자 가져오기
             const issueCreator = context.payload.issue.user.login; // 이슈 작성자 ID
-            console.log(`Authorized Users: ${authorizedUsers}`);
+            console.log(`Authorized User: ${authorizedUser}`);
             console.log(`Issue Creator: ${issueCreator}`);
 
-            if (!authorizedUsers.includes(issueCreator)) {
+            if (issueCreator !== authorizedUser) {
               console.log(`Unauthorized user: ${issueCreator}`);
               await github.issues.update({
                 owner: context.repo.owner,
@@ -30,6 +30,8 @@ jobs:
             } else {
               console.log(`Authorized user: ${issueCreator}`);
             }
+        env:
+          AUTHORIZED_USER: ${{ secrets.AUTHORIZED_USER }}
 
       - name: Trigger Convert Issue Workflow
         if: ${{ success() }} # 작성자가 허가된 경우에만 실행
@@ -46,5 +48,3 @@ jobs:
                 "body": "${{ github.event.issue.body }}"
               }
             }'
-        env:
-          AUTHORIZED_USERS: ${{ secrets.AUTHORIZED_USERS }}
