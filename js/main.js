@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   // Fetch JSON 데이터를 불러옵니다.
-  fetch("../public/posts.json") // 지정한 ../public/posts.json 경로 유지
+  fetch("/Git-Personal-Blog-System/public/posts.json") // 지정한 ../public/posts.json 경로 유지
     .then((response) => {
       if (!response.ok) {
         throw new Error("Failed to fetch posts.json");
