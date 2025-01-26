@@ -13,11 +13,29 @@ on:
         default: "Default Body"
 
 jobs:
-  debug-markdown:
+  create-markdown:
     runs-on: ubuntu-latest
     steps:
-      - name: Debug inputs
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Convert issue to Markdown
         run: |
-          echo "DEBUGGING INPUTS"
-          echo "Issue Title: ${{ github.event.inputs.title }}"
-          echo "Issue Body: ${{ github.event.inputs.body }}"
+          echo "Converting issue to markdown..."
+          ISSUE_TITLE="${{ github.event.inputs.title }}"
+          ISSUE_BODY="${{ github.event.inputs.body }}"
+          ISSUE_DATE=$(date +'%Y%m%d')
+          ISSUE_COUNT=$(ls posts | grep $ISSUE_DATE | wc -l)
+          FILE_NAME="posts/${ISSUE_DATE}_$((ISSUE_COUNT + 1)).md"
+
+          echo "## $ISSUE_TITLE" > $FILE_NAME
+          echo "" >> $FILE_NAME
+          echo "$ISSUE_BODY" >> $FILE_NAME
+
+      - name: Commit and push Markdown file
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add posts/*.md
+          git commit -m "Add markdown file from issue"
+          git push
