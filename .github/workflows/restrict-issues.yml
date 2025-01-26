@@ -1,0 +1,35 @@
+name: Restrict Issues
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  restrict-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check issue creator
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // Secrets에서 허용된 사용자 목록 가져오기
+            const authorizedUsers = process.env.AUTHORIZED_USERS.split(','); 
+            const issueCreator = context.payload.issue.user.login; // 이슈 작성자 ID
+
+            console.log(`Authorized Users: ${authorizedUsers}`);
+            console.log(`Issue Creator: ${issueCreator}`);
+
+            if (!authorizedUsers.includes(issueCreator)) {
+              console.log(`Unauthorized user: ${issueCreator}`);
+              await github.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.issue.number,
+                state: 'closed',
+                body: 'This issue has been closed because you are not authorized.'
+              });
+            } else {
+              console.log(`Authorized user: ${issueCreator}`);
+            }
+        env:
+          AUTHORIZED_USERS: ${{ secrets.AUTHORIZED_USERS }} # Secrets에서 값 불러오기
